@@ -10,7 +10,7 @@
 <?import javafx.scene.layout.Pane?>
 <?import javafx.scene.text.Font?>
 
-<Pane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="550.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="module.AesController">
+<Pane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="550.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gui.AesController">
    <children>
       <Label alignment="CENTER" layoutX="108.0" layoutY="14.0" prefHeight="44.0" prefWidth="384.0" text="Advanced Encryption Standard" textAlignment="CENTER">
          <font>
@@ -40,7 +40,7 @@
       <Button fx:id="readKeyButton" layoutX="210.0" layoutY="125.0" mnemonicParsing="false" onAction="#readKeyFile" prefHeight="25.0" prefWidth="66.0" text="Read" />
       <TextField fx:id="keyFileWrite" layoutX="300.0" layoutY="125.0" prefHeight="25.0" prefWidth="88.0" />
       <Button fx:id="writeKeyButton" layoutX="398.0" layoutY="125.0" mnemonicParsing="false" onAction="#writeKeyFile" prefHeight="25.0" prefWidth="66.0" text="Write" />
-      <TextArea fx:id="plaintextTextBox" layoutX="42.0" layoutY="259.0" prefHeight="169.0" prefWidth="177.0" />
+      <TextArea fx:id="plaintextTextBox" wrapText="true" layoutX="42.0" layoutY="259.0" prefHeight="169.0" prefWidth="177.0" />
       <Label layoutX="39.0" layoutY="175.0" prefHeight="25.0" prefWidth="121.0" text="Plain text file:">
          <font>
             <Font name="Courier New" size="12.0" />
@@ -51,7 +51,7 @@
             <Font name="Courier New" size="12.0" />
          </font>
       </Label>
-      <TextArea fx:id="cyphertextTextBox" layoutX="382.0" layoutY="259.0" prefHeight="169.0" prefWidth="177.0" />
+      <TextArea fx:id="cyphertextTextBox" wrapText="true" layoutX="382.0" layoutY="259.0" prefHeight="169.0" prefWidth="177.0" />
       <TextField fx:id="cyphertextFileRead" layoutX="382.0" layoutY="200.0" prefHeight="25.0" prefWidth="121.0" />
       <Label layoutX="39.0" layoutY="435.0" prefHeight="25.0" prefWidth="121.0" text="Save to file:">
          <font>

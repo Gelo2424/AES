@@ -1,22 +1,19 @@
-package module;
+package gui;
 
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
-import javafx.scene.control.RadioButton;
-import javafx.scene.control.TextArea;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.stage.FileChooser;
+
+import module.AESException;
+import module.AesMain;
 
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.util.Arrays;
-
 
 public class AesController {
 
@@ -81,12 +78,21 @@ public class AesController {
     //KONWERSJA BYTE -> HEX | HEX -> BYTE
 
 
-    public static byte[] hexStringToByteArray(String s) {
+    public static byte[] hexStringToByteArray(String s) throws AESException {
         int len = s.length();
+        if(len % 32 != 0) {
+            throw new AESException("Given HEX String is not correct");
+        }
         byte[] data = new byte[len / 2];
         for (int i = 0; i < len; i += 2) {
-            data[i / 2] = (byte) ((Character.digit(s.charAt(i), 16) << 4)
-                    + Character.digit(s.charAt(i+1), 16));
+            char left = s.charAt(i);
+            char right = s.charAt(i+1);
+            if( (!(left > 47 && left < 58) && !(left > 64 && left < 71) && !(left > 96 && left < 103)) ||
+                    (!(right > 47 && right < 58) && !(right > 64 && right < 71) && !(right > 96 && right < 103))) {
+                throw new AESException("Given HEX String is not correct");
+            }
+            data[i / 2] = (byte) ((Character.digit(left, 16) << 4)
+                    + Character.digit(right, 16));
         }
         return data;
     }
@@ -99,8 +105,17 @@ public class AesController {
         return sb.toString();
     }
 
-    //GENERATE KEY
+    public static String stringToHex(String in) {
+        StringBuilder sb = new StringBuilder();
+        char[] ch = in.toCharArray();
+        for (char c : ch) {
+            String hexString = Integer.toHexString(c);
+            sb.append(hexString);
+        }
+        return sb.toString();
+    }
 
+    //GENERATE KEY
 
     public void generateKeyOnClick(ActionEvent actionEvent){
         aesMain.setKey(aesMain.generateKey());
@@ -109,15 +124,25 @@ public class AesController {
 
     //ENCRYPT
 
-
     public void encryptOnClick(ActionEvent actionEvent) {
+        try{
+            aesMain.setKey(hexStringToByteArray(keyTextField.getText()));
+            aesMain.testKey();
+        } catch(AESException e) {
+            DialogBox.dialogAboutError("Invalid Key! " + e.getMessage());
+            return;
+        }
 
-        if(textboxRadio.isSelected()) {
+        if (textboxRadio.isSelected()) {
+            if (plaintextTextBox.getText().isEmpty()) {
+                DialogBox.dialogAboutError("Plaintext can't be empty!");
+                return;
+            }
             String plainText = plaintextTextBox.getText();
             aesMain.setPlainText(plainText.getBytes(StandardCharsets.UTF_8));
         }
 
-        aesMain.setKey(hexStringToByteArray(keyTextField.getText()));
+
         aesMain.encryption();
         cyphertextTextBox.setText(byteArrayToHexString(aesMain.getCypherText()));
 
@@ -125,19 +150,31 @@ public class AesController {
 
     //DECRYPT
 
-
     public void decprytOnClick(ActionEvent actionEvent) {
 
-        //Sprawdz poprawnosc klucza
-
-        if(textboxRadio.isSelected()) {
-            String cypherText = cyphertextTextBox.getText();
-            aesMain.setCypherText(hexStringToByteArray(cypherText));
+        try{
+            aesMain.setKey(hexStringToByteArray(keyTextField.getText()));
+            aesMain.testKey();
+        } catch(AESException e) {
+            DialogBox.dialogAboutError("Invalid Key!" + e.getMessage());
+            return;
         }
 
-        aesMain.setKey(hexStringToByteArray(keyTextField.getText()));
+        if(textboxRadio.isSelected()) {
+            if (cyphertextTextBox.getText().isEmpty()) {
+                DialogBox.dialogAboutError("CypherText can't be empty!");
+                return;
+            }
+            String cypherText = cyphertextTextBox.getText();
+            try {
+                aesMain.setCypherText(hexStringToByteArray(cypherText));
+            } catch (AESException e) {
+                DialogBox.dialogAboutError("CypherText error! " + e.getMessage());
+                return;
+            }
+        }
+
         aesMain.decryption();
-        //plaintextTextBox.setText(byteArrayToHexString(aesMain.getPlainText()));
         plaintextTextBox.setText(new String(aesMain.getPlainText(), StandardCharsets.UTF_8));
     }
 
@@ -145,16 +182,24 @@ public class AesController {
     //READ FROM FILE & WRITE TO FILE
 
 
-    private static void configureFileChooser(final FileChooser fileChooser) {
+    private static File configureOpenFileChooser(final FileChooser fileChooser) {
         fileChooser.setTitle("Choose a file");
         fileChooser.setInitialDirectory(
                 new File(System.getProperty("user.home"))
         );
+        return fileChooser.showOpenDialog(null);
+    }
+
+    private static File configureWriteFileChooser(final FileChooser fileChooser) {
+        fileChooser.setTitle("Write a file");
+        fileChooser.setInitialDirectory(
+                new File(System.getProperty("user.home"))
+        );
+        return fileChooser.showSaveDialog(null);
     }
 
     public void readKeyFile(ActionEvent actionEvent) {
-        configureFileChooser(fileChooser);
-        File file = fileChooser.showOpenDialog(null);
+        File file = configureOpenFileChooser(fileChooser);
         if (file == null) {
             return;
         }
@@ -164,7 +209,7 @@ public class AesController {
         } catch(IOException e) {
             e.printStackTrace();
         }
-        if(bytes == null) {
+        if (bytes == null) {
             return;
         }
         aesMain.setKey(bytes);
@@ -173,8 +218,7 @@ public class AesController {
     }
 
     public void writeKeyFile(ActionEvent actionEvent) {
-        fileChooser.setTitle("Write a key file");
-        File file = fileChooser.showSaveDialog(null);
+        File file = configureWriteFileChooser(fileChooser);
         if (file == null) {
             return;
         }
@@ -191,8 +235,7 @@ public class AesController {
 
 
     public void readPlaintext(ActionEvent actionEvent) {
-        configureFileChooser(fileChooser);
-        File file = fileChooser.showOpenDialog(null);
+        File file = configureOpenFileChooser(fileChooser);
         if (file == null) {
             return;
         }
@@ -211,8 +254,7 @@ public class AesController {
     }
 
     public void readCyphertext(ActionEvent actionEvent) {
-        configureFileChooser(fileChooser);
-        File file = fileChooser.showOpenDialog(null);
+        File file = configureOpenFileChooser(fileChooser);
         if (file == null) {
             return;
         }
@@ -228,12 +270,16 @@ public class AesController {
 
         cyphertextFileRead.setText(file.toString());
         cyphertextTextBox.setText(new String(bytes));
-        aesMain.setCypherText(hexStringToByteArray(cyphertextTextBox.getText()));
+        try{
+            aesMain.setCypherText(hexStringToByteArray(cyphertextTextBox.getText()));
+        } catch(AESException e) {
+            DialogBox.dialogAboutError("CypherText error! " + e.getMessage());
+        }
+
     }
 
     public void writePlaintext(ActionEvent actionEvent) {
-        fileChooser.setTitle("Write a Plaintext file");
-        File file = fileChooser.showSaveDialog(null);
+        File file = configureWriteFileChooser(fileChooser);
         if (file == null) {
             return;
         }
@@ -248,8 +294,7 @@ public class AesController {
     }
 
     public void writeCyphertext(ActionEvent actionEvent) {
-        fileChooser.setTitle("Write a Cyphertext file");
-        File file = fileChooser.showSaveDialog(null);
+        File file = configureWriteFileChooser(fileChooser);
         if (file == null) {
             return;
         }
@@ -262,4 +307,5 @@ public class AesController {
         }
         cyphertextFileWrite.setText(file.toString());
     }
+
 }

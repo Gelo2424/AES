@@ -1,8 +1,7 @@
-package module;
+package gui;
 
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.control.Menu;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 

@@ -1,27 +1,21 @@
 package module;
 
+import gui.DialogBox;
+
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
-import java.math.BigInteger;
 import java.security.NoSuchAlgorithmException;
 
 public class AesMain {
-
-    class AESKeyException extends Exception
-    {public AESKeyException(String msg){super(msg);};
-    }
-    class AESException extends Exception
-    {public AESException(String msg){super(msg);};
-    }
 
     private byte[] key;
     private byte[] plainText;
     private byte[] cypherText;
 
-    private  int Nb = 4, Nk, Nr;
-    private  byte[][] kluczGlowny;
+    private int Nb = 4, Nk, Nr;
+    private byte[][] mainKey;
 
-    private  int[] sbox = { 0x63, 0x7C, 0x77, 0x7B, 0xF2, 0x6B, 0x6F,
+    private final int[] sBox = { 0x63, 0x7C, 0x77, 0x7B, 0xF2, 0x6B, 0x6F,
             0xC5, 0x30, 0x01, 0x67, 0x2B, 0xFE, 0xD7, 0xAB, 0x76, 0xCA, 0x82,
             0xC9, 0x7D, 0xFA, 0x59, 0x47, 0xF0, 0xAD, 0xD4, 0xA2, 0xAF, 0x9C,
             0xA4, 0x72, 0xC0, 0xB7, 0xFD, 0x93, 0x26, 0x36, 0x3F, 0xF7, 0xCC,
@@ -46,7 +40,7 @@ public class AesMain {
             0x28, 0xDF, 0x8C, 0xA1, 0x89, 0x0D, 0xBF, 0xE6, 0x42, 0x68, 0x41,
             0x99, 0x2D, 0x0F, 0xB0, 0x54, 0xBB, 0x16 };
 
-    private int[] inv_sbox = { 0x52, 0x09, 0x6A, 0xD5, 0x30, 0x36, 0xA5,
+    private final int[] invSBox = { 0x52, 0x09, 0x6A, 0xD5, 0x30, 0x36, 0xA5,
             0x38, 0xBF, 0x40, 0xA3, 0x9E, 0x81, 0xF3, 0xD7, 0xFB, 0x7C, 0xE3,
             0x39, 0x82, 0x9B, 0x2F, 0xFF, 0x87, 0x34, 0x8E, 0x43, 0x44, 0xC4,
             0xDE, 0xE9, 0xCB, 0x54, 0x7B, 0x94, 0x32, 0xA6, 0xC2, 0x23, 0x3D,
@@ -98,10 +92,23 @@ public class AesMain {
             e.printStackTrace();
         }
         assert gen != null;
-        gen.init(128); /* 128-bit AES */
+        gen.init(128);
         SecretKey secret = gen.generateKey();
         key = secret.getEncoded();
         return key;
+    }
+
+    public void testKey () throws AESException {
+        if (key == null || key.length==0) {
+            throw new AESException("Key is too short!");
+        }
+        int len = key.length;
+        if (len < 16) {
+            throw new AESException("Key is too short!");
+        }
+        if (len > 16) {
+            throw new AESException("Key is too long!");
+        }
     }
 
     public void encryption() {
@@ -124,7 +131,7 @@ public class AesMain {
     {
         byte[][] temp = new byte[Nb * (Nr+1)][4];
         int i = 0;
-        int j =0;
+        int j = 0;
         while (i < Nk)
         {
             temp[i][0] = key[j];
@@ -138,7 +145,6 @@ public class AesMain {
     }
 
 
-
     private byte[][] addRoundKey(byte[][] state, byte[][] w, int round)
     {
         byte[][] tmp = new byte[state.length][state[0].length];
@@ -150,25 +156,22 @@ public class AesMain {
         return tmp;
     }
 
-
     private byte[][] subBytes(byte[][] state)
     {
         byte[][] temp = new byte[state.length][state[0].length];
         for (int row = 0; row < 4; row++)
             for (int col = 0; col < Nb; col++)
-                temp[row][col] = (byte) (sbox[(state[row][col] & 0xff)]);
+                temp[row][col] = (byte) (sBox[(state[row][col] & 0xff)]);
         return temp;
     }
-
 
     private byte[][] invSubBytes(byte[][] state)
     {
         for (int row = 0; row < 4; row++)
             for (int col = 0; col < Nb; col++)
-                state[row][col] = (byte)(inv_sbox[(state[row][col] & 0xff)]);
+                state[row][col] = (byte)(invSBox[(state[row][col] & 0xff)]);
         return state;
     }
-
 
     private byte[][] shiftRows(byte[][] state)
     {
@@ -195,7 +198,6 @@ public class AesMain {
         }
         return state;
     }
-
 
     private  byte[][] invMixColumns(byte[][] s)
     {
@@ -250,17 +252,17 @@ public class AesMain {
         byte[][] state = new byte[4][4];
         for (int i = 0; i < in.length; i++)
             state[i / 4][i % 4] = in[i];
-        state = addRoundKey(state, kluczGlowny, 0);
+        state = addRoundKey(state, mainKey, 0);
         for (int round = 1; round < Nr; round++)
         {
             state = subBytes(state);
             state = shiftRows(state);
             state = mixColumns(state);
-            state = addRoundKey(state, kluczGlowny, round);
+            state = addRoundKey(state, mainKey, round);
         }
         state = subBytes(state);
         state = shiftRows(state);
-        state = addRoundKey(state, kluczGlowny, Nr);
+        state = addRoundKey(state, mainKey, Nr);
         for (int i = 0; i < tmp.length; i++)
             tmp[i] = state[i / 4][i%4];
         return tmp;
@@ -273,30 +275,22 @@ public class AesMain {
         byte[][] state = new byte[4][4]; //4 Nb
         for (int i = 0; i < in.length; i++)
             state[i/4][i % 4] = in[i];
-        state = addRoundKey(state, kluczGlowny, Nr);
+        state = addRoundKey(state, mainKey, Nr);
         for (int round = Nr-1; round >=1; round--)
         {
             state = invSubBytes(state);
             state = invShiftRows(state);
-            state = addRoundKey(state, kluczGlowny, round);
+            state = addRoundKey(state, mainKey, round);
             state = invMixColumns(state);
         }
         state = invSubBytes(state);
         state = invShiftRows(state);
-        state = addRoundKey(state, kluczGlowny, 0);
+        state = addRoundKey(state, mainKey, 0);
         for (int i = 0; i < tmp.length; i++)
             tmp[i] = state[i / 4][i%4];
         return tmp;
     }
 
-
-    public void testKey(byte[] key) throws AESKeyException
-    {
-        if (key == null || key.length==0) throw new AESKeyException("Klucz jest za krótki");
-        int len = key.length;
-        if (len < 16) throw new AESKeyException("Klucz jest za krótki");
-        if (len > 16) throw new AESKeyException("Klucz jest za długi");
-    }
 
     public  byte[] encode(byte[] message, byte[] key) throws AESException
     {
@@ -312,7 +306,7 @@ public class AesMain {
         byte[] result = new byte[len];
         byte[] temp = new byte[len];
         byte[] blok = new byte[16];
-        kluczGlowny = generateKey(key);
+        mainKey = generateKey(key);
         for (int i = 0; i < len;i++)
         { if(i<message.length) temp[i]=message[i];
         else temp[i]=0;
@@ -334,7 +328,7 @@ public class AesMain {
         byte[] blok = new byte[16];
         Nk = key.length/4;
         Nr = Nk + 6;
-        kluczGlowny = generateKey(key);
+        mainKey = generateKey(key);
         for (int i = 0; i < encrypted.length;)
         {
             for (int j=0;j<16;j++) blok[j]=encrypted[i++];

@@ -1,7 +1,5 @@
 package module;
 
-import gui.DialogBox;
-
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 import java.security.NoSuchAlgorithmException;
@@ -12,7 +10,9 @@ public class AesMain {
     private byte[] plainText;
     private byte[] cypherText;
 
-    private int Nb = 4, Nk, Nr;
+    private int Nb = 4;
+    private int Nk;
+    private int Nr;
     private byte[][] mainKey;
 
     private final int[] sBox = { 0x63, 0x7C, 0x77, 0x7B, 0xF2, 0x6B, 0x6F,
@@ -99,7 +99,7 @@ public class AesMain {
     }
 
     public void testKey () throws AESException {
-        if (key == null || key.length==0) {
+        if (key == null || key.length == 0) {
             throw new AESException("Key is too short!");
         }
         int len = key.length;
@@ -111,7 +111,10 @@ public class AesMain {
         }
     }
 
-    public void encryption() {
+    public void encryption() throws AESException {
+        if(plainText == null || plainText.length == 0) {
+            throw new AESException("PlainText can't be empty!");
+        }
         try {
             cypherText = encode(plainText, key);
         } catch(AESException e) {
@@ -119,7 +122,10 @@ public class AesMain {
         }
     }
 
-    public void decryption() {
+    public void decryption() throws AESException {
+        if(cypherText == null || cypherText.length == 0) {
+            throw new AESException("CypherText can't be empty!");
+        }
         try {
             plainText = decode(cypherText, key);
         } catch(AESException e) {
@@ -127,8 +133,7 @@ public class AesMain {
         }
     }
 
-    private byte[][] generateKey(byte[] key)
-    {
+    private byte[][] generateKey(byte[] key) {
         byte[][] temp = new byte[Nb * (Nr+1)][4];
         int i = 0;
         int j = 0;
@@ -145,8 +150,7 @@ public class AesMain {
     }
 
 
-    private byte[][] addRoundKey(byte[][] state, byte[][] w, int round)
-    {
+    private byte[][] addRoundKey(byte[][] state, byte[][] w, int round) {
         byte[][] tmp = new byte[state.length][state[0].length];
         for (int c = 0; c < Nb; c++)
         {
@@ -156,8 +160,7 @@ public class AesMain {
         return tmp;
     }
 
-    private byte[][] subBytes(byte[][] state)
-    {
+    private byte[][] subBytes(byte[][] state) {
         byte[][] temp = new byte[state.length][state[0].length];
         for (int row = 0; row < 4; row++)
             for (int col = 0; col < Nb; col++)
@@ -165,16 +168,14 @@ public class AesMain {
         return temp;
     }
 
-    private byte[][] invSubBytes(byte[][] state)
-    {
+    private byte[][] invSubBytes(byte[][] state) {
         for (int row = 0; row < 4; row++)
             for (int col = 0; col < Nb; col++)
                 state[row][col] = (byte)(invSBox[(state[row][col] & 0xff)]);
         return state;
     }
 
-    private byte[][] shiftRows(byte[][] state)
-    {
+    private byte[][] shiftRows(byte[][] state) {
         byte[] t = new byte[4];
         for (int r = 1; r < 4; r++)
         {
@@ -186,8 +187,7 @@ public class AesMain {
         return state;
     }
 
-    private byte[][] invShiftRows(byte[][] state)
-    {
+    private byte[][] invShiftRows(byte[][] state) {
         byte[] t = new byte[4];
         for (int r = 1; r < 4; r++)
         {
@@ -199,8 +199,7 @@ public class AesMain {
         return state;
     }
 
-    private  byte[][] invMixColumns(byte[][] s)
-    {
+    private  byte[][] invMixColumns(byte[][] s) {
         int[] sp = new int[4];
         byte b02 = (byte)0x0e, b03 = (byte)0x0b, b04 = (byte)0x0d, b05 = (byte)0x09;
         for (int c = 0; c < 4; c++)
@@ -214,8 +213,7 @@ public class AesMain {
         return s;
     }
 
-    private  byte[][] mixColumns(byte[][] s)
-    {
+    private  byte[][] mixColumns(byte[][] s) {
         int[] sp = new int[4];
         byte b02 = (byte)0x02, b03 = (byte)0x03;
         for (int c = 0; c < 4; c++)
@@ -229,8 +227,7 @@ public class AesMain {
         return s;
     }
 
-    public  byte fMul(byte a, byte b)
-    {
+    public  byte fMul(byte a, byte b) {
         byte aa = a, bb = b, r = 0, t;
         while (aa != 0)
         {
@@ -246,8 +243,7 @@ public class AesMain {
     }
 
 
-    public  byte[] encrypt(byte[] in)
-    {
+    public  byte[] encrypt(byte[] in) {
         byte[] tmp = new byte[in.length];
         byte[][] state = new byte[4][4];
         for (int i = 0; i < in.length; i++)
@@ -269,8 +265,7 @@ public class AesMain {
     }
 
 
-    public  byte[] decrypt(byte[] in)
-    {
+    public  byte[] decrypt(byte[] in) {
         byte[] tmp = new byte[in.length];
         byte[][] state = new byte[4][4]; //4 Nb
         for (int i = 0; i < in.length; i++)
@@ -292,8 +287,7 @@ public class AesMain {
     }
 
 
-    public  byte[] encode(byte[] message, byte[] key) throws AESException
-    {
+    public  byte[] encode(byte[] message, byte[] key) throws AESException {
         Nk = key.length/4;
         Nr = Nk + 6;
         if(message.length==0)throw new AESException("Podaj dane do szyfrowania");
@@ -321,8 +315,7 @@ public class AesMain {
         return result;
     }
 
-    public  byte[] decode(byte[] encrypted, byte[] key) throws AESException
-    {
+    public  byte[] decode(byte[] encrypted, byte[] key) throws AESException {
         if(encrypted.length==0)throw new AESException("Podaj dane do deszyfrowania");
         byte[] tmpResult = new byte[encrypted.length];
         byte[] blok = new byte[16];

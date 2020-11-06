@@ -1,6 +1,5 @@
 package gui;
 
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.stage.FileChooser;
@@ -61,7 +60,7 @@ public class AesController {
     public Button decryptButton;
 
     @FXML//BACK
-    public void previous(ActionEvent actionEvent) {
+    public void previous() {
         mainWindowController.loadMenuScreen();
     }
 
@@ -117,14 +116,14 @@ public class AesController {
 
     //GENERATE KEY
 
-    public void generateKeyOnClick(ActionEvent actionEvent){
+    public void generateKeyOnClick(){
         aesMain.setKey(aesMain.generateKey());
         keyTextField.setText(byteArrayToHexString(aesMain.getKey()));
     }
 
     //ENCRYPT
 
-    public void encryptOnClick(ActionEvent actionEvent) {
+    public void encryptOnClick() {
         try{
             aesMain.setKey(hexStringToByteArray(keyTextField.getText()));
             aesMain.testKey();
@@ -141,16 +140,19 @@ public class AesController {
             String plainText = plaintextTextBox.getText();
             aesMain.setPlainText(plainText.getBytes(StandardCharsets.UTF_8));
         }
-
-
-        aesMain.encryption();
+        try{
+            aesMain.encryption();
+        } catch (AESException e) {
+            DialogBox.dialogAboutError("PlainText error! " + e.getMessage());
+            return;
+        }
         cyphertextTextBox.setText(byteArrayToHexString(aesMain.getCypherText()));
 
     }
 
     //DECRYPT
 
-    public void decprytOnClick(ActionEvent actionEvent) {
+    public void decprytOnClick() {
 
         try{
             aesMain.setKey(hexStringToByteArray(keyTextField.getText()));
@@ -173,8 +175,13 @@ public class AesController {
                 return;
             }
         }
+        try{
+            aesMain.decryption();
+        } catch (AESException e) {
+            DialogBox.dialogAboutError("CypherText error! " + e.getMessage());
+            return;
+        }
 
-        aesMain.decryption();
         plaintextTextBox.setText(new String(aesMain.getPlainText(), StandardCharsets.UTF_8));
     }
 
@@ -198,7 +205,7 @@ public class AesController {
         return fileChooser.showSaveDialog(null);
     }
 
-    public void readKeyFile(ActionEvent actionEvent) {
+    public void readKeyFile() {
         File file = configureOpenFileChooser(fileChooser);
         if (file == null) {
             return;
@@ -217,7 +224,7 @@ public class AesController {
         keyFileRead.setText(file.toString());
     }
 
-    public void writeKeyFile(ActionEvent actionEvent) {
+    public void writeKeyFile() {
         File file = configureWriteFileChooser(fileChooser);
         if (file == null) {
             return;
@@ -234,7 +241,7 @@ public class AesController {
     }
 
 
-    public void readPlaintext(ActionEvent actionEvent) {
+    public void readPlaintext() {
         File file = configureOpenFileChooser(fileChooser);
         if (file == null) {
             return;
@@ -253,7 +260,7 @@ public class AesController {
         aesMain.setPlainText(bytes);
     }
 
-    public void readCyphertext(ActionEvent actionEvent) {
+    public void readCyphertext() {
         File file = configureOpenFileChooser(fileChooser);
         if (file == null) {
             return;
@@ -268,17 +275,17 @@ public class AesController {
             return;
         }
 
-        cyphertextFileRead.setText(file.toString());
-        cyphertextTextBox.setText(new String(bytes));
         try{
             aesMain.setCypherText(hexStringToByteArray(cyphertextTextBox.getText()));
         } catch(AESException e) {
             DialogBox.dialogAboutError("CypherText error! " + e.getMessage());
+            return;
         }
-
+        cyphertextFileRead.setText(file.toString());
+        cyphertextTextBox.setText(new String(bytes));
     }
 
-    public void writePlaintext(ActionEvent actionEvent) {
+    public void writePlaintext() {
         File file = configureWriteFileChooser(fileChooser);
         if (file == null) {
             return;
@@ -293,7 +300,7 @@ public class AesController {
         plaintextFileWrite.setText(file.toString());
     }
 
-    public void writeCyphertext(ActionEvent actionEvent) {
+    public void writeCyphertext() {
         File file = configureWriteFileChooser(fileChooser);
         if (file == null) {
             return;

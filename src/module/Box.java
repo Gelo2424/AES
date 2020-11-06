@@ -2,17 +2,29 @@ package module;
 
 public class Box {
 
-    byte[][] matrix = { {2, 3, 1, 1},
-            {1, 2, 3, 1},
-            {1, 1, 2, 3},
-            {3, 1, 1, 2} };
+    private static final int numberOfBytes = 4; //Number of chars(32bit)
+    private static final int numberOfRounds = 10;
 
+    byte[][] matrix = { {2, 3, 1, 1},
+                        {1, 2, 3, 1},
+                        {1, 1, 2, 3},
+                        {3, 1, 1, 2} };
+
+
+    //Combined key with box
+    public static void addRoundKey(byte[][] box, byte[][] key, int round) {
+        for (int i = 0; i < numberOfBytes; i++) {
+            for (int j = 0; j < 4; j++) {
+                box[j][i] ^= key[round * numberOfBytes + i][j];
+            }
+        }
+    }
 
     //Replaces elements in arr with values from SBox
     public static void subBytes(byte[][] box) {
         for (int row = 0; row < 4; row++) {
             for (int column = 0; column < 4; column++) {
-                box[row][column] = Sbox.replace_byte(box[row][column]);
+                box[row][column] = Sbox.replace_byte(box[row][column], Sbox.s_box);
             }
         }
     }

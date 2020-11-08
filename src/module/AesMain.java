@@ -10,10 +10,11 @@ public class AesMain {
     private byte[] plainText;
     private byte[] cypherText;
 
-    private final int numberOfBytes = 4; //Number of chars(32bit)
+    private final int numberOfBytes = 4;   //Number of chars(32bit)
     private final int numberOfRounds = 10; //Number of round for AES
-    private byte[][] mainKey;
+    private byte[][] mainKey;              //Matrix for key
 
+    //GETTERS & SETTERS
     public byte[] getKey() {
         return key;
     }
@@ -33,6 +34,7 @@ public class AesMain {
         this.cypherText = cypherText;
     }
 
+    //GENERATE 128bit KEY FOR AES
     public byte[] generateKey() {
         KeyGenerator gen = null;
         try{
@@ -47,6 +49,7 @@ public class AesMain {
         return key;
     }
 
+    //KEY TESTING
     public void testKey () throws AESException {
         if (key == null || key.length == 0) {
             throw new AESException("Key is too short!");
@@ -60,6 +63,7 @@ public class AesMain {
         }
     }
 
+    //THIS METHOD IS INVOKE FROM encryptOnClick method from AesController
     public void encryption() throws AESException {
         if(plainText == null || plainText.length == 0) {
             throw new AESException("PlainText can't be empty!");
@@ -68,15 +72,90 @@ public class AesMain {
 
     }
 
+    //THIS METHOD IS INVOKE FROM decryptOnClick method from AesController
     public void decryption() throws AESException {
         if(cypherText == null || cypherText.length == 0) {
             throw new AESException("CypherText can't be empty!");
         }
-        try {
-            plainText = decode(cypherText, key);
-        } catch(AESException e) {
-            e.printStackTrace();
+        plainText = decode(cypherText, key);
+    }
+
+    //ENCRYPT BOX
+    private byte[] encrypt(byte[] in) {
+        byte[] out = new byte[in.length];
+        byte[][] box = new byte[4][4];
+
+        //INPUT INTO BOX
+        int k = 0;
+        for(int i = 0; i < box.length; i++) {
+            for(int j = 0; j < box.length; j++) {
+                box[i][j] = in[k++];
+            }
         }
+
+        //FIRST ROUND
+        Box.addRoundKey(box, mainKey, 0);
+
+        //1-9 ROUNDS
+        for (int actualRound = 1; actualRound < numberOfRounds; actualRound++) {
+            Box.subBytes(box);
+            Box.shiftRows(box);
+            mixColumns(box);
+            Box.addRoundKey(box, mainKey, actualRound);
+        }
+
+        //LAST ROUND
+        Box.subBytes(box);
+        Box.shiftRows(box);
+        Box.addRoundKey(box, mainKey, numberOfRounds);
+
+        //READ OUTPUT FROM BOX
+        k = 0;
+        for (byte[] bytes : box) {
+            for (int j = 0; j < box.length; j++) {
+                out[k++] = bytes[j];
+            }
+        }
+        return out;
+    }
+
+    //DECRYPTE BOX
+    private byte[] decrypt(byte[] in) {
+        byte[] out = new byte[in.length];
+        byte[][] box = new byte[4][4];
+
+        //INPUT INTO BOX
+        int k = 0;
+        for(int i = 0; i < box.length; i++) {
+            for(int j = 0; j < box.length; j++) {
+                box[i][j] = in[k++];
+            }
+        }
+
+        //LAST ROUND
+        Box.addRoundKey(box, mainKey, numberOfRounds);
+
+        //9-1 ROUNDS
+        for (int actualRound = numberOfRounds - 1; actualRound >= 1; actualRound--) {
+            invSubBytes(box);
+            Box.invShiftRows(box);
+            Box.addRoundKey(box, mainKey, actualRound);
+            invMixColumns(box);
+        }
+
+        //FIRST ROUND
+        invSubBytes(box);
+        Box.invShiftRows(box);
+        Box.addRoundKey(box, mainKey, 0);
+
+        //READ OUTPUT FROM BOX
+        k = 0;
+        for (byte[] bytes : box) {
+            for (int j = 0; j < box.length; j++) {
+                out[k++] = bytes[j];
+            }
+        }
+        return out;
     }
 
     private byte[][] generateKey(byte[] key) {
@@ -95,11 +174,10 @@ public class AesMain {
         return temp;
     }
 
-    private byte[][] invSubBytes(byte[][] state) {
+    private void invSubBytes(byte[][] state) {
         for (int row = 0; row < 4; row++)
             for (int col = 0; col < numberOfBytes; col++)
                 state[row][col] = (byte)(Sbox.invSBox[(state[row][col] & 0xff)]);
-        return state;
     }
 
    /* public static void invSubBytes(byte[][] box) {
@@ -110,19 +188,7 @@ public class AesMain {
         }
     }*/
 
-    private byte[][] invShiftRows(byte[][] state) {
-        byte[] t = new byte[4];
-        for (int r = 1; r < 4; r++)
-        {
-            for (int c = 0; c < numberOfBytes; c++)
-                t[(c + r)% numberOfBytes] = state[r][c];
-            for (int c = 0; c < numberOfBytes; c++)
-                state[r][c] = t[c];
-        }
-        return state;
-    }
-
-    private  byte[][] invMixColumns(byte[][] s) {
+    private void invMixColumns(byte[][] s) {
         int[] sp = new int[4];
         byte b02 = (byte)0x0e, b03 = (byte)0x0b, b04 = (byte)0x0d, b05 = (byte)0x09;
         for (int c = 0; c < 4; c++)
@@ -133,7 +199,6 @@ public class AesMain {
             sp[3] = fMul(b03, s[0][c]) ^ fMul(b04, s[1][c]) ^ fMul(b05,s[2][c])  ^ fMul(b02,s[3][c]);
             for (int i = 0; i < 4; i++) s[i][c] = (byte)(sp[i]);
         }
-        return s;
     }
 
     private void mixColumns(byte[][] s) {
@@ -164,109 +229,69 @@ public class AesMain {
     }
 
 
-    public byte[] encrypt(byte[] in) {
-        byte[] out = new byte[in.length];
-        byte[][] box = new byte[4][4];
-        int k = 0;
-        for(int i = 0; i < box.length; i++) {
-            for(int j = 0; j < box.length; j++) {
-                box[i][j] = in[k++];
-            }
-        }
-        Box.addRoundKey(box, mainKey, 0);
-        for (int actualRound = 1; actualRound < numberOfRounds; actualRound++) {
-            Box.subBytes(box);
-            Box.shiftRows(box);
-            mixColumns(box);
-            Box.addRoundKey(box, mainKey, actualRound);
-        }
-        Box.subBytes(box);
-        Box.shiftRows(box);
-        Box.addRoundKey(box, mainKey, numberOfRounds);
-        k = 0;
-        for(int i = 0; i < box.length; i++) {
-            for(int j = 0; j < box.length; j++) {
-                out[k++] = box[i][j];
-            }
-        }
-        return out;
-    }
 
+    private byte[] encode(byte[] message, byte[] key) {
+        int blockSize = 16;
+        int messageSize = blockSize;
+        int blocks = message.length / blockSize;
 
-    public byte[] decrypt(byte[] in) {
-        byte[] out = new byte[in.length];
-        byte[][] box = new byte[4][4];
-        int k = 0;
-        for(int i = 0; i < box.length; i++) {
-            for(int j = 0; j < box.length; j++) {
-                box[i][j] = in[k++];
-            }
+        //messageSize must be multiple of 16
+        if ((message.length % blockSize) != 0) {
+            messageSize = (blocks + 1) * blockSize;
         }
-        Box.addRoundKey(box, mainKey, numberOfRounds);
-        for (int round = numberOfRounds - 1; round >= 1; round--) {
-            box = invSubBytes(box);
-            box = invShiftRows(box);
-            Box.addRoundKey(box, mainKey, round);
-            box = invMixColumns(box);
+        else {
+            messageSize = blocks * blockSize;
         }
-        box = invSubBytes(box);
-        box = invShiftRows(box);
-        Box.addRoundKey(box, mainKey, 0);
-        k = 0;
-        for(int i = 0; i < box.length; i++) {
-            for(int j = 0; j < box.length; j++) {
-                out[k++] = box[i][j];
-            }
-        }
-        return out;
-    }
-
-
-    public  byte[] encode(byte[] message, byte[] key) {
-        int len;
-        int pom = message.length/16;
-        if (pom==0) len = 16;
-        else if ((message.length % 16) != 0)
-            len = (pom+1)*16;
-        else len = pom*16;
-        byte[] result = new byte[len];
-        byte[] temp = new byte[len];
-        byte[] blok = new byte[16];
+        byte[] cypherText = new byte[messageSize];
+        byte[] temp = new byte[messageSize];
+        byte[] block = new byte[blockSize];
         mainKey = generateKey(key);
-        for (int i = 0; i < len;i++)
-        { if(i<message.length) temp[i]=message[i];
-        else temp[i]=0;
+        for (int i = 0; i < messageSize; i++) {
+            if(i < message.length) {
+                temp[i]=message[i];
+            }
+            else {
+                temp[i] = 0;
+            }
         }
-        for (int k = 0; k < temp.length;) {
-            for (int j=0;j<16;j++) blok[j]=temp[k++];
-            blok = encrypt(blok);
-            System.arraycopy(blok, 0, result,k-16, blok.length);
 
+        //DIVIDE MESSAGE INTO BLOCKS AND ENCRYPT THEM
+        int pos = 0;
+        for (int i = 0; i < temp.length;) {
+            for (int j = 0; j < blockSize; j++) {
+                block[j] = temp[i++];
+            }
+            block = encrypt(block);
+            System.arraycopy(block, 0, cypherText,i - blockSize, block.length);
         }
-        return result;
+        return cypherText;
     }
 
-    public  byte[] decode(byte[] encrypted, byte[] key) throws AESException {
-        if(encrypted.length==0)throw new AESException("Podaj dane do deszyfrowania");
-        byte[] tmpResult = new byte[encrypted.length];
-        byte[] blok = new byte[16];
+    private  byte[] decode(byte[] cypherText, byte[] key) {
+        int blockSize = 16;
+        byte[] temp = new byte[cypherText.length];
+        byte[] block = new byte[blockSize];
         mainKey = generateKey(key);
-        for (int i = 0; i < encrypted.length;)
-        {
-            for (int j=0;j<16;j++) blok[j]=encrypted[i++];
-            blok = decrypt(blok);
-            System.arraycopy(blok, 0, tmpResult,i-16, blok.length);
+
+        //DIVIDE MESSAGE INTO BLOCKS AND DECRYPT THEM
+        for (int i = 0; i < cypherText.length;) {
+            for (int j = 0; j < blockSize; j++) {
+                block[j]=cypherText[i++];
+            }
+            block = decrypt(block);
+            System.arraycopy(block, 0, temp,i-blockSize, block.length);
         }
+
         int cnt = 0;
         for (int i = 1; i < 17; i += 2)
         {
-            if (tmpResult[tmpResult.length - i] == 0 && tmpResult[tmpResult.length - i - 1] == 0)
+            if (temp[temp.length - i] == 0 && temp[temp.length - i - 1] == 0)
                 cnt += 2;
             else  break;
         }
-        byte[] result = new byte[tmpResult.length - cnt];
-        System.arraycopy(tmpResult, 0, result, 0, tmpResult.length - cnt);
-        return result;
+        byte[] plainText = new byte[temp.length - cnt];
+        System.arraycopy(temp, 0, plainText, 0, temp.length - cnt);
+        return plainText;
     }
 
 }

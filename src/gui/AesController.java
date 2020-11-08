@@ -140,6 +140,12 @@ public class AesController {
             String plainText = plaintextTextBox.getText();
             aesMain.setPlainText(plainText.getBytes(StandardCharsets.UTF_8));
         }
+        if(fileRadio.isSelected()) {
+            if (plaintextFileRead.getText().isEmpty()) {
+                DialogBox.dialogAboutError("Choose o file!");
+                return;
+            }
+        }
         try{
             aesMain.encryption();
         } catch (AESException e) {
@@ -172,6 +178,12 @@ public class AesController {
                 aesMain.setCypherText(hexStringToByteArray(cypherText));
             } catch (AESException e) {
                 DialogBox.dialogAboutError("CypherText error! " + e.getMessage());
+                return;
+            }
+        }
+        if(fileRadio.isSelected()) {
+            if (cyphertextFileRead.getText().isEmpty()) {
+                DialogBox.dialogAboutError("Choose o file!");
                 return;
             }
         }

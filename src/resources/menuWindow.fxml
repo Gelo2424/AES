@@ -5,9 +5,9 @@
 <?import javafx.scene.layout.Pane?>
 <?import javafx.scene.text.Font?>
 
-<Pane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="300.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gui.MenuWindowController">
+<Pane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="300.0" style="-fx-background-color: #516682;" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gui.MenuWindowController">
    <children>
-      <Button layoutX="104.0" layoutY="69.0" mnemonicParsing="false" onAction="#openAES" prefHeight="40.0" prefWidth="93.0" style="-fx-background-color: rgb(230,230,230);" text="AES">
+      <Button layoutX="92.0" layoutY="68.0" mnemonicParsing="false" onAction="#openAES" prefHeight="40.0" prefWidth="116.0" style="-fx-background-color: #FFA755; -fx-background-radius: 5em;" text="AES">
          <font>
             <Font name="Serif Regular" size="17.0" />
          </font>
@@ -15,7 +15,7 @@
             <Cursor fx:constant="HAND" />
          </cursor>
       </Button>
-      <Button layoutX="104.0" layoutY="135.0" mnemonicParsing="false" onAction="#openAuthors" prefHeight="40.0" prefWidth="93.0" style="-fx-background-color: rgb(230,230,230);" text="Authors">
+      <Button layoutX="92.0" layoutY="122.0" mnemonicParsing="false" onAction="#openAuthors" prefHeight="40.0" prefWidth="116.0" style="-fx-background-color: #FFA755; -fx-background-radius: 5em;" text="Authors">
          <font>
             <Font name="SansSerif Regular" size="17.0" />
          </font>
@@ -23,7 +23,7 @@
             <Cursor fx:constant="HAND" />
          </cursor>
       </Button>
-      <Button layoutX="79.0" layoutY="303.0" lineSpacing="1.0" mnemonicParsing="false" onAction="#exit" prefHeight="40.0" prefWidth="143.0" style="-fx-background-color: #ff7878; -fx-font-family: Arial; -fx-font-weight: bold; -fx-background-radius: 100;" text="Exit" textAlignment="CENTER">
+      <Button layoutX="78.0" layoutY="302.0" lineSpacing="1.0" mnemonicParsing="false" onAction="#exit" prefHeight="40.0" prefWidth="145.0" style="-fx-background-color: #FF7878; -fx-font-family: Arial; -fx-font-weight: bold; -fx-background-radius: 100;" text="Exit" textAlignment="CENTER">
          <cursor>
             <Cursor fx:constant="HAND" />
          </cursor>

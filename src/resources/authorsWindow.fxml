@@ -6,30 +6,29 @@
 <?import javafx.scene.layout.Pane?>
 <?import javafx.scene.text.Font?>
 
-
-<Pane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gui.AuthorsController">
+<Pane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="538.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gui.AuthorsController">
    <children>
-      <Button layoutX="35.0" layoutY="29.0" mnemonicParsing="false" onAction="#previous" prefHeight="34.0" prefWidth="66.0" style="-fx-background-color: rgb(230,230,230); -fx-background-radius: 100;" text="&lt;---">
+      <Button layoutX="35.0" layoutY="29.0" mnemonicParsing="false" onAction="#previous" prefHeight="34.0" prefWidth="66.0" style="-fx-background-color: #FFA755; -fx-background-radius: 100;" text="&lt;---">
          <cursor>
             <Cursor fx:constant="HAND" />
          </cursor>
       </Button>
-      <Label alignment="CENTER" layoutX="118.0" layoutY="24.0" prefHeight="44.0" prefWidth="384.0" text="Authors" textAlignment="CENTER">
+      <Label alignment="CENTER" layoutX="108.0" layoutY="83.0" prefHeight="44.0" prefWidth="384.0" text="Authors" textAlignment="CENTER" textFill="WHITE">
          <font>
             <Font name="Courier New" size="18.0" />
          </font>
       </Label>
-      <Label layoutX="218.0" layoutY="117.0" text="Grzegorz Kucharski">
+      <Label layoutX="208.0" layoutY="176.0" text="Grzegorz Kucharski" textFill="WHITE">
          <font>
             <Font name="Courier New Italic" size="17.0" />
          </font>
       </Label>
-      <Label alignment="CENTER" layoutX="218.0" layoutY="153.0" prefHeight="20.0" prefWidth="184.0" text="Wojciech Cwynar">
+      <Label alignment="CENTER" layoutX="208.0" layoutY="212.0" prefHeight="20.0" prefWidth="184.0" text="Wojciech Cwynar" textFill="WHITE">
          <font>
             <Font name="Courier New Italic" size="17.0" />
          </font>
       </Label>
-      <Label alignment="CENTER" layoutX="218.0" layoutY="190.0" prefHeight="20.0" prefWidth="184.0" text="Wojciech Baljon" textAlignment="CENTER">
+      <Label alignment="CENTER" layoutX="208.0" layoutY="249.0" prefHeight="20.0" prefWidth="184.0" text="Wojciech Baljon" textAlignment="CENTER" textFill="WHITE">
          <font>
             <Font name="Courier New Italic" size="17.0" />
          </font>

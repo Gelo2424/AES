@@ -100,7 +100,7 @@ public class AesMain {
         for (int actualRound = 1; actualRound < numberOfRounds; actualRound++) {
             Box.subBytes(box);
             Box.shiftRows(box);
-            mixColumns(box);
+            Box.mixColumns(box);
             Box.addRoundKey(box, mainKey, actualRound);
         }
 
@@ -137,14 +137,14 @@ public class AesMain {
 
         //9-1 ROUNDS
         for (int actualRound = numberOfRounds - 1; actualRound >= 1; actualRound--) {
-            invSubBytes(box);
+            Box.invSubBytes(box);
             Box.invShiftRows(box);
             Box.addRoundKey(box, mainKey, actualRound);
-            invMixColumns(box);
+            Box.invMixColumns(box);
         }
 
         //FIRST ROUND
-        invSubBytes(box);
+        Box.invSubBytes(box);
         Box.invShiftRows(box);
         Box.addRoundKey(box, mainKey, 0);
 
@@ -174,36 +174,11 @@ public class AesMain {
         return temp;
     }
 
-    private void invSubBytes(byte[][] state) {
-        for (int row = 0; row < 4; row++)
-            for (int col = 0; col < numberOfBytes; col++)
-                state[row][col] = (byte)(Sbox.invSBox[(state[row][col] & 0xff)]);
-    }
-
-   /* public static void invSubBytes(byte[][] box) {
-        for (int row = 0; row < 4; row++) {
-            for (int column = 0; column < 4; column++) {
-                box[row][column] = Sbox.replace_byte(box[row][column], Sbox.invSBox);
-            }
-        }
-    }*/
-
-    private void invMixColumns(byte[][] s) {
-        int[] sp = new int[4];
-        byte b02 = (byte)0x0e, b03 = (byte)0x0b, b04 = (byte)0x0d, b05 = (byte)0x09;
-        for (int c = 0; c < 4; c++)
-        {
-            sp[0] = fMul(b02, s[0][c]) ^ fMul(b03, s[1][c]) ^ fMul(b04,s[2][c])  ^ fMul(b05,s[3][c]);
-            sp[1] = fMul(b05, s[0][c]) ^ fMul(b02, s[1][c]) ^ fMul(b03,s[2][c])  ^ fMul(b04,s[3][c]);
-            sp[2] = fMul(b04, s[0][c]) ^ fMul(b05, s[1][c]) ^ fMul(b02,s[2][c])  ^ fMul(b03,s[3][c]);
-            sp[3] = fMul(b03, s[0][c]) ^ fMul(b04, s[1][c]) ^ fMul(b05,s[2][c])  ^ fMul(b02,s[3][c]);
-            for (int i = 0; i < 4; i++) s[i][c] = (byte)(sp[i]);
-        }
-    }
-
     private void mixColumns(byte[][] s) {
         int[] sp = new int[4];
-        byte b02 = (byte)0x02, b03 = (byte)0x03;
+        byte b02 = (byte)0x02;
+        byte b03 = (byte)0x03;
+
         for (int c = 0; c < 4; c++)
         {
             sp[0] = fMul(b02, s[0][c]) ^ fMul(b03, s[1][c]) ^ s[2][c]  ^ s[3][c];
@@ -213,6 +188,7 @@ public class AesMain {
             for (int i = 0; i < 4; i++) s[i][c] = (byte)(sp[i]);
         }
     }
+
     public  byte fMul(byte a, byte b) {
         byte aa = a, bb = b, r = 0, t;
         while (aa != 0)
@@ -282,15 +258,20 @@ public class AesMain {
             System.arraycopy(block, 0, temp,i-blockSize, block.length);
         }
 
-        int cnt = 0;
+        int counter = 0;
         for (int i = 1; i < 17; i += 2)
         {
-            if (temp[temp.length - i] == 0 && temp[temp.length - i - 1] == 0)
-                cnt += 2;
-            else  break;
+            if (temp[temp.length - i] == 0 && temp[temp.length - i - 1] == 0) {
+                counter += 2;
+            }
+            else {
+                break;
+            }
         }
-        byte[] plainText = new byte[temp.length - cnt];
-        System.arraycopy(temp, 0, plainText, 0, temp.length - cnt);
+        byte[] plainText = new byte[temp.length - counter];
+        for (int i = 0; i < temp.length - counter; i++) {
+            plainText[i] = temp[i];
+        }
         return plainText;
     }
 

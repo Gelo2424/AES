@@ -19,7 +19,7 @@ public class Sbox {
             0xe1, 0xf8, 0x98, 0x11, 0x69, 0xd9, 0x8e, 0x94, 0x9b, 0x1e, 0x87, 0xe9, 0xce, 0x55, 0x28, 0xdf,
             0x8c, 0xa1, 0x89, 0x0d, 0xbf, 0xe6, 0x42, 0x68, 0x41, 0x99, 0x2d, 0x0f, 0xb0, 0x54, 0xbb, 0x16
     };
-    public static final int[] invSBox = {
+    public static final int[] inv_s_box = {
             0x52, 0x09, 0x6A, 0xD5, 0x30, 0x36, 0xA5, 0x38, 0xBF, 0x40, 0xA3, 0x9E, 0x81, 0xF3, 0xD7, 0xFB,
             0x7C, 0xE3, 0x39, 0x82, 0x9B, 0x2F, 0xFF, 0x87, 0x34, 0x8E, 0x43, 0x44, 0xC4, 0xDE, 0xE9, 0xCB,
             0x54, 0x7B, 0x94, 0x32, 0xA6, 0xC2, 0x23, 0x3D, 0xEE, 0x4C, 0x95, 0x0B, 0x42, 0xFA, 0xC3, 0x4E,
@@ -37,7 +37,7 @@ public class Sbox {
             0xA0, 0xE0, 0x3B, 0x4D, 0xAE, 0x2A, 0xF5, 0xB0, 0xC8, 0xEB, 0xBB, 0x3C, 0x83, 0x53, 0x99, 0x61,
             0x17, 0x2B, 0x04, 0x7E, 0xBA, 0x77, 0xD6, 0x26, 0xE1, 0x69, 0x14, 0x63, 0x55, 0x21, 0x0C, 0x7D };
 
-    public static byte replace_byte(byte b, int[] box) {
+    public static byte replace_byte(byte b, boolean encrypt) {
         int operation_int = b;
         int result = 0;
         if(operation_int > 0) {
@@ -46,12 +46,21 @@ public class Sbox {
             /*right_half*/
             operation_int = operation_int << 28;
             int right_half = operation_int >>> 28;
-            result = box[left_half * 16 + right_half];
+            if(encrypt) {
+                result = s_box[left_half * 16 + right_half];
+            } else {
+                result = inv_s_box[left_half * 16 + right_half];
+            }
         }
         else if(operation_int == 0) {
-            result = 0x63;
+            if(encrypt) {
+                result = 0x63;
+            }
+            else {
+                result = 0x52;
+            }
         }
-        else {
+        else if(operation_int < 0) {
             operation_int = operation_int << 24;
             operation_int = operation_int >>> 24;
             /*lewa */
@@ -59,7 +68,11 @@ public class Sbox {
             /*prawa */
             operation_int = operation_int << 28;
             int right_half = operation_int >>> 28;
-            result = box[left_half * 16 + right_half];
+            if(encrypt) {
+                result = s_box[left_half * 16 + right_half];
+            } else {
+                result = inv_s_box[left_half * 16 + right_half];
+            }
         }
         return (byte)result;
     }

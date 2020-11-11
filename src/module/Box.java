@@ -16,11 +16,27 @@ public class Box {
                            {0x0b, 0x0d, 0x09, 0x0e} };
     */
 
+    public static int[][] rCon = {
+            {0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x1b, 0x36},
+            {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
+            {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
+            {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
+    };
+
     //Combined key with box
-    public static void addRoundKey(byte[][] box, byte[][] key, int round) {
+    /*public static void addRoundKey(byte[][] box, byte[][] key, int round) {
         for (int i = 0; i < numberOfBytes; i++) {
             for (int j = 0; j < 4; j++) {
                 box[j][i] ^= key[round * numberOfBytes + i][j];
+            }
+        }
+    }*/
+
+    public static void addRoundKey(byte[][] box, byte[][] scheduledKey, int round) {
+        for (int row = 0; row < 4; row++) {
+            for (int column = 0; column < 4; column++) {
+                //Runda zaczyna się od zerowej
+                box[row][column] ^= scheduledKey[row][round * 4 + column];
             }
         }
     }
@@ -94,33 +110,13 @@ public class Box {
         }
     }
 
-    /* NASZ KOD
-    private static byte fMul(byte state, int mulNum) {
-        // mulNum powinien być tylko 2 lub 3
-        int result = state;
-        if (result < 0) {
-            result = result << 24;
-            result = result >>> 24;
-        }
-        result = result * 2;
-        if (result > 0xff) {
-            result = result ^ 0x1b;
-        }
-        if (mulNum == 2) {
-            return (byte)result;
-        } else {
-            result = result ^ state;
-            return (byte)result;
-        }
-    }*/
-    /* WIKIPEDIA KOD
+    // WIKIPEDIA KOD
     private static byte fMul( byte b, byte a) {
         byte p = 0;
         for (int counter = 0; counter < 8; counter++) {
             if ((b & 1) != 0) {
                 p ^= a;
             }
-
             boolean hi_bit_set = (a & 0x80) != 0;
             a <<= 1;
             if (hi_bit_set) {
@@ -130,7 +126,8 @@ public class Box {
         }
         return p;
     }
-    */
+
+    /*
     public static byte fMul(byte state, byte mulNum) {
         byte out = 0;
         byte t;
@@ -147,6 +144,35 @@ public class Box {
             mulNum = (byte) ((mulNum & 0xff) >> 1);
         }
         return out;
+    }
+    */
+
+    public static byte[][] keySchedule(byte[] key) {
+        byte[][] temp = new byte[4][44];
+        for (int column = 0; column < 4; column++) {
+            for (int row = 0; row < 4; row++) {
+                temp[row][column] = key[column * 4 + row];
+            }
+        }
+        int column_counter = 3;
+
+        for (int round = 0; round < 10; round++) {
+            byte[] temp_column = {temp[1][column_counter], temp[2][column_counter], temp[3][column_counter], temp[0][column_counter]};
+            for(int i = 0; i < 4; i++) {
+                temp_column[i] = Sbox.replace_byte(temp_column[i],true);
+            }
+            for(int i = 0; i < 4; i++) {
+                //możliwe, że te zmienne do xora muszą być najpierw zmienione na inty
+                temp[i][column_counter + 1] = (byte) (temp[i][column_counter - 3] ^ temp_column[i] ^ rCon[i][round]);
+            }
+            for(int column = column_counter + 2; column <= column_counter + 4; column++) {
+                for(int row = 0; row < 4; row++) {
+                    temp[row][column] = (byte) (temp[row][column - 4] ^ temp[row][column - 1]);
+                }
+            }
+            column_counter = column_counter + 4;
+        }
+        return temp;
     }
 
     private static byte[][] copyBox(byte[][] box) {

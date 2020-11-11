@@ -7,12 +7,10 @@ import javafx.stage.FileChooser;
 import module.AESException;
 import module.AesMain;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.Arrays;
 
 public class AesController {
 
@@ -260,16 +258,22 @@ public class AesController {
         }
         byte[] bytes = null;
         try {
-            bytes = Files.readAllBytes(file.toPath());
+            FileInputStream in = new FileInputStream(file);
+            int size = in.available();
+            bytes = new byte[size];
+            in.read(bytes);
+            in.close();
         } catch(IOException e) {
             e.printStackTrace();
         }
         if(bytes == null) {
-            return;
+            DialogBox.dialogAboutError("File is empty!");
         }
+
+        aesMain.setPlainText(bytes);
         plaintextFileRead.setText(file.toString());
         plaintextTextBox.setText(new String(bytes));
-        aesMain.setPlainText(bytes);
+
     }
 
     public void readCyphertext() {
@@ -279,22 +283,21 @@ public class AesController {
         }
         byte[] bytes = null;
         try {
-            bytes = Files.readAllBytes(file.toPath());
+            FileInputStream in = new FileInputStream(file);
+            int size = in.available();
+            bytes = new byte[size];
+            in.read(bytes);
+            in.close();
         } catch(IOException e) {
             e.printStackTrace();
         }
         if(bytes == null) {
-            return;
+            DialogBox.dialogAboutError("File is empty!");
         }
 
-        try{
-            aesMain.setCypherText(hexStringToByteArray(cyphertextTextBox.getText()));
-        } catch(AESException e) {
-            DialogBox.dialogAboutError("CypherText error! " + e.getMessage());
-            return;
-        }
+        aesMain.setCypherText(bytes);
         cyphertextFileRead.setText(file.toString());
-        cyphertextTextBox.setText(new String(bytes));
+        cyphertextTextBox.setText(byteArrayToHexString(bytes));
     }
 
     public void writePlaintext() {
@@ -303,8 +306,8 @@ public class AesController {
             return;
         }
         try{
-            BufferedWriter out = new BufferedWriter(new FileWriter(file.toString()));
-            out.write(plaintextTextBox.getText());
+            FileOutputStream out = new FileOutputStream(file);
+            out.write(aesMain.getPlainText());
             out.close();
         } catch (IOException e) {
             e.printStackTrace();
@@ -318,8 +321,8 @@ public class AesController {
             return;
         }
         try{
-            BufferedWriter out = new BufferedWriter(new FileWriter(file.toString()));
-            out.write(cyphertextTextBox.getText());
+            FileOutputStream out = new FileOutputStream(file);
+            out.write(aesMain.getCypherText());
             out.close();
         } catch (IOException e) {
             e.printStackTrace();

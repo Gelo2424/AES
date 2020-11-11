@@ -14,6 +14,7 @@ public class AesMain {
     private final int numberOfRounds = 10; //Number of round for AES
     private byte[][] mainKey;              //Matrix for key
 
+
     //GETTERS & SETTERS
     public byte[] getKey() {
         return key;
@@ -48,6 +49,8 @@ public class AesMain {
         key = secret.getEncoded();
         return key;
     }
+
+
 
     //KEY TESTING
     public void testKey () throws AESException {
@@ -158,56 +161,38 @@ public class AesMain {
         return out;
     }
 
+    /*private byte[][] generateKey(byte[] key) {
+        byte[][] temp = new byte[numberOfBytes * (numberOfRounds + 1)][4];
+        int i = 0;
+        int j = 0;
+        while (i < 4)
+        {
+            temp[i][0] = key[j++];
+            temp[i][1] = key[j++];
+            temp[i][2] = key[j++];
+            temp[i][3] = key[j++];
+            i++;
+        }
+        return temp;
+    }*/
+
     private byte[][] generateKey(byte[] key) {
         byte[][] temp = new byte[numberOfBytes * (numberOfRounds + 1)][4];
         int i = 0;
         int j = 0;
         while (i < 4)
         {
-            temp[i][0] = key[j];
+            temp[i][0] = key[j++];
             temp[i][1] = key[j++];
             temp[i][2] = key[j++];
             temp[i][3] = key[j++];
             i++;
-            j++;
         }
         return temp;
     }
 
-    private void mixColumns(byte[][] s) {
-        int[] sp = new int[4];
-        byte b02 = (byte)0x02;
-        byte b03 = (byte)0x03;
-
-        for (int c = 0; c < 4; c++)
-        {
-            sp[0] = fMul(b02, s[0][c]) ^ fMul(b03, s[1][c]) ^ s[2][c]  ^ s[3][c];
-            sp[1] = s[0][c]  ^ fMul(b02, s[1][c]) ^ fMul(b03, s[2][c]) ^ s[3][c];
-            sp[2] = s[0][c]  ^ s[1][c]  ^ fMul(b02, s[2][c]) ^ fMul(b03, s[3][c]);
-            sp[3] = fMul(b03, s[0][c]) ^ s[1][c]  ^ s[2][c]  ^ fMul(b02, s[3][c]);
-            for (int i = 0; i < 4; i++) s[i][c] = (byte)(sp[i]);
-        }
-    }
-
-    public  byte fMul(byte a, byte b) {
-        byte aa = a, bb = b, r = 0, t;
-        while (aa != 0)
-        {
-            if ((aa & 1) != 0)
-                r = (byte) (r ^ bb);
-            t = (byte) (bb & 0x20);
-            bb = (byte) (bb << 1);
-            if (t != 0)
-                bb = (byte) (bb ^ 0x1b);
-            aa = (byte) ((aa & 0xff) >> 1);
-        }
-        return r;
-    }
-
-
-
     private byte[] encode(byte[] message, byte[] key) {
-        int blockSize = 16;
+        int  blockSize = 16;
         int messageSize = blockSize;
         int blocks = message.length / blockSize;
 
@@ -221,10 +206,11 @@ public class AesMain {
         byte[] cypherText = new byte[messageSize];
         byte[] temp = new byte[messageSize];
         byte[] block = new byte[blockSize];
-        mainKey = generateKey(key);
+        //mainKey = generateKey(key);
+        mainKey = Box.keySchedule(key);
         for (int i = 0; i < messageSize; i++) {
             if(i < message.length) {
-                temp[i]=message[i];
+                temp[i] = message[i];
             }
             else {
                 temp[i] = 0;
@@ -232,7 +218,6 @@ public class AesMain {
         }
 
         //DIVIDE MESSAGE INTO BLOCKS AND ENCRYPT THEM
-        int pos = 0;
         for (int i = 0; i < temp.length;) {
             for (int j = 0; j < blockSize; j++) {
                 block[j] = temp[i++];
@@ -247,8 +232,8 @@ public class AesMain {
         int blockSize = 16;
         byte[] temp = new byte[cypherText.length];
         byte[] block = new byte[blockSize];
-        mainKey = generateKey(key);
-
+        //mainKey = generateKey(key);
+        mainKey = Box.keySchedule(key);
         //DIVIDE MESSAGE INTO BLOCKS AND DECRYPT THEM
         for (int i = 0; i < cypherText.length;) {
             for (int j = 0; j < blockSize; j++) {

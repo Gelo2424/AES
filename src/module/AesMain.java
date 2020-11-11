@@ -161,35 +161,6 @@ public class AesMain {
         return out;
     }
 
-    /*private byte[][] generateKey(byte[] key) {
-        byte[][] temp = new byte[numberOfBytes * (numberOfRounds + 1)][4];
-        int i = 0;
-        int j = 0;
-        while (i < 4)
-        {
-            temp[i][0] = key[j++];
-            temp[i][1] = key[j++];
-            temp[i][2] = key[j++];
-            temp[i][3] = key[j++];
-            i++;
-        }
-        return temp;
-    }*/
-
-    private byte[][] generateKey(byte[] key) {
-        byte[][] temp = new byte[numberOfBytes * (numberOfRounds + 1)][4];
-        int i = 0;
-        int j = 0;
-        while (i < 4)
-        {
-            temp[i][0] = key[j++];
-            temp[i][1] = key[j++];
-            temp[i][2] = key[j++];
-            temp[i][3] = key[j++];
-            i++;
-        }
-        return temp;
-    }
 
     private byte[] encode(byte[] message, byte[] key) {
         int  blockSize = 16;

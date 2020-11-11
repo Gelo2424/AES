@@ -23,15 +23,6 @@ public class Box {
             {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
     };
 
-    //Combined key with box
-    /*public static void addRoundKey(byte[][] box, byte[][] key, int round) {
-        for (int i = 0; i < numberOfBytes; i++) {
-            for (int j = 0; j < 4; j++) {
-                box[j][i] ^= key[round * numberOfBytes + i][j];
-            }
-        }
-    }*/
-
     public static void addRoundKey(byte[][] box, byte[][] scheduledKey, int round) {
         for (int row = 0; row < 4; row++) {
             for (int column = 0; column < 4; column++) {
@@ -126,26 +117,6 @@ public class Box {
         }
         return p;
     }
-
-    /*
-    public static byte fMul(byte state, byte mulNum) {
-        byte out = 0;
-        byte t;
-        while (mulNum != 0)
-        {
-            if ((mulNum & 1) != 0) {
-                out = (byte) (out ^ state);
-            }
-            t = (byte) (state & 0x20);
-            state = (byte) (state << 1);
-            if (t != 0) {
-                state = (byte) (state ^ 0x1b);
-            }
-            mulNum = (byte) ((mulNum & 0xff) >> 1);
-        }
-        return out;
-    }
-    */
 
     public static byte[][] keySchedule(byte[] key) {
         byte[][] temp = new byte[4][44];

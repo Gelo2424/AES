@@ -272,7 +272,7 @@ public class AesController {
 
         aesMain.setPlainText(bytes);
         plaintextFileRead.setText(file.toString());
-        plaintextTextBox.setText(new String(bytes));
+        plaintextTextBox.setText(new String(bytes, StandardCharsets.UTF_8));
 
     }
 

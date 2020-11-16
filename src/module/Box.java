@@ -101,7 +101,6 @@ public class Box {
         }
     }
 
-    // WIKIPEDIA KOD
     private static byte fMul( byte b, byte a) {
         byte p = 0;
         for (int counter = 0; counter < 8; counter++) {
@@ -133,7 +132,6 @@ public class Box {
                 temp_column[i] = Sbox.replace_byte(temp_column[i],true);
             }
             for(int i = 0; i < 4; i++) {
-                //możliwe, że te zmienne do xora muszą być najpierw zmienione na inty
                 temp[i][column_counter + 1] = (byte) (temp[i][column_counter - 3] ^ temp_column[i] ^ rCon[i][round]);
             }
             for(int column = column_counter + 2; column <= column_counter + 4; column++) {

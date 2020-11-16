@@ -136,7 +136,7 @@ public class AesController {
                 return;
             }
             String plainText = plaintextTextBox.getText();
-            aesMain.setPlainText(plainText.getBytes(StandardCharsets.UTF_8));
+            aesMain.setPlainText(plainText.getBytes(StandardCharsets.ISO_8859_1));
         }
         if(fileRadio.isSelected()) {
             if (plaintextFileRead.getText().isEmpty()) {
@@ -192,7 +192,7 @@ public class AesController {
             return;
         }
 
-        plaintextTextBox.setText(new String(aesMain.getPlainText(), StandardCharsets.UTF_8));
+        plaintextTextBox.setText(new String(aesMain.getPlainText(), StandardCharsets.ISO_8859_1));
     }
 
 
@@ -272,7 +272,7 @@ public class AesController {
 
         aesMain.setPlainText(bytes);
         plaintextFileRead.setText(file.toString());
-        plaintextTextBox.setText(new String(bytes, StandardCharsets.UTF_8));
+        plaintextTextBox.setText(new String(bytes, StandardCharsets.ISO_8859_1));
 
     }
 

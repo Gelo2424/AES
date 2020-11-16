@@ -217,8 +217,8 @@ public class AesMain {
         int counter = 0;
         for (int i = 1; i < 17; i += 2)
         {
-            if (temp[temp.length - i] == 0 && temp[temp.length - i - 1] == 0) {
-                counter += 2;
+            if (temp[temp.length - i] == 0) {
+                counter += 1;
             }
             else {
                 break;
